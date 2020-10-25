@@ -1,6 +1,6 @@
-# PoolTogether Custom Prize Strategy
+# PoolTogether Migrate V3 Contract
 
-Example project demonstrating a custom prize strategy.  Fork this project to easily create and test your own prize stratgies.
+Helps users migrate from PoolTogether V2 to PoolTogether v3
 
 ## Setup
 
@@ -23,43 +23,3 @@ Now enable the env vars using [direnv](https://direnv.net/docs/installation.html
 ```
 $ direnv allow
 ```
-
-### Setup PoolTogether Contracts as a separate project
-
-Clone the [PoolTogether Contracts](https://github.com/pooltogether/pooltogether-pool-contracts/tree/version-3) repository in another directory:
-
-```
-$ cd ..
-$ git clone git@github.com:pooltogether/pooltogether-pool-contracts.git
-$ cd pooltogether-pool-contracts
-$ git checkout version-3
-```
-
-Notice that we check out the `version-3` branch.
-
-**Follow the setup instruction in the [README](https://github.com/pooltogether/pooltogether-pool-contracts/tree/version-3)**
-
-Now start a local node:
-
-```
-$ yarn start
-```
-
-You should now have a local node running that is fully bootstrapped with:
-
-- PoolTogether contracts
-- Mock DAI
-- Mock Compound cDai
-- Mock yEarn yDAI Vault
-
-### Deploy the Custom Prize Strategy
-
-```
-$ yarn deploy-pt
-```
-
-This will compile and deploy the contracts against the local node started in the other project.
-
-### Test it out!
-
-Create a prize pool in the normal way, and then try swapping out the strategy!

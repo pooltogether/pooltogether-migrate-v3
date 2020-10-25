@@ -13,4 +13,8 @@ contract MockPod is ERC777Mintable, PodInterface {
   function tokenToCollateralValue(uint256) external override view returns (uint256) {
     return value;
   }
+
+  function balanceOfUnderlying(address) external override view returns (uint256) {
+    return 0;
+  }
 }

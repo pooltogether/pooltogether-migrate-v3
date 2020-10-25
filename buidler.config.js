@@ -1,3 +1,5 @@
+const networks = require('./buidler.networks')
+
 usePlugin("@nomiclabs/buidler-ethers");
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("buidler-deploy");
@@ -12,13 +14,7 @@ module.exports = {
     },
     evmVersion: "istanbul"
   },
-  networks: {
-    buidlerevm: {
-    },
-    pt: {
-      url: 'http://127.0.0.1:8545'
-    }
-  },
+  networks,
   namedAccounts: {
     deployer: {
       default: 0

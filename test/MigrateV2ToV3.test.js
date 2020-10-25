@@ -10,6 +10,8 @@ const overrides = { gasLimit: 20000000 }
 
 const toWei = ethers.utils.parseEther
 
+const fromUsdc = (usdc) => ethers.utils.parseUnits(usdc, 6)
+
 const debug = require('debug')('ptv3:MigrateV2ToV3.test')
 
 describe('MigrateV2ToV3', () => {
@@ -56,7 +58,7 @@ describe('MigrateV2ToV3', () => {
       await migrate.poolUsdcPod(),
       wallet
     )
-    await poolUsdcPod.setValue(toWei('100'))
+    await poolUsdcPod.setValue(fromUsdc('100'))
 
     v3Token = await ethers.getContractAt(
       'ERC20Mintable',
@@ -81,15 +83,15 @@ describe('MigrateV2ToV3', () => {
 
   describe('migrate pool usdc', async () => {
     it('should work', async () => {
-      await poolUsdc.mint(wallet._address, toWei('100'))
+      await poolUsdc.mint(wallet._address, fromUsdc('100'))
       await v3Token.mint(migrate.address, toWei('10000'))
-      await poolUsdc.send(migrate.address, toWei('100'), [])
+      await poolUsdc.send(migrate.address, fromUsdc('100'), [])
       expect(await v3Token.balanceOf(wallet._address)).to.equal(toWei('100'))
     })
 
     it('should revert if insufficient balance', async () => {
-      await poolUsdc.mint(wallet._address, toWei('100'))
-      await expect(poolUsdc.send(migrate.address, toWei('100'), [])).to.be.revertedWith("ERC20: transfer amount exceeds balance")
+      await poolUsdc.mint(wallet._address, fromUsdc('100'))
+      await expect(poolUsdc.send(migrate.address, fromUsdc('100'), [])).to.be.revertedWith("ERC20: transfer amount exceeds balance")
     })
   })
 
@@ -121,7 +123,7 @@ describe('MigrateV2ToV3', () => {
     })
   })
 
-  describe('withdraw()', async () => {
+  describe('withdrawERC777()', async () => {
     it('should allow owner to withdraw tokens', async () => {
       await poolUsdcPod.mint(wallet._address, toWei('999'))
       await v3Token.mint(migrate.address, toWei('1000'))
@@ -137,6 +139,19 @@ describe('MigrateV2ToV3', () => {
       await poolUsdcPod.send(migrate.address, toWei('999'), [])
 
       await expect(migrate.connect(wallet2).withdrawERC777(poolUsdcPod.address)).to.be.revertedWith("Ownable: caller is not the owner")
+    })
+  })
+
+  describe('withdrawERC20()', async () => {
+    it('should allow owner to withdraw tokens', async () => {
+      await v3Token.mint(migrate.address, toWei('999'))
+      await migrate.withdrawERC20(v3Token.address)
+      expect(await v3Token.balanceOf(wallet._address)).to.equal(toWei('999'))
+    })
+
+    it('should not allow anyone else to withdraw', async () => {
+      await v3Token.mint(migrate.address, toWei('999'))
+      await expect(migrate.connect(wallet2).withdrawERC20(v3Token.address)).to.be.revertedWith("Ownable: caller is not the owner")
     })
   })
 

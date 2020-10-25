@@ -56,16 +56,16 @@ contract MigrateV2ToV3 is OwnableUpgradeSafe, IERC777Recipient, IERC1820Implemen
   ) external override {
     require(to == address(this), "MigrateV2ToV3/only-tokens");
 
-    if (msg.sender == address(poolDaiToken) ||
-        msg.sender == address(poolUsdcToken)
-    ) {
+    if (msg.sender == address(poolDaiToken)) {
       v3Token.transfer(from, amount);
+    } else if (msg.sender == address(poolUsdcToken)) {
+      v3Token.transfer(from, amount * 1e12);
     } else if (msg.sender == address(poolDaiPod)) {
       uint256 collateral = poolDaiPod.tokenToCollateralValue(amount);
       v3Token.transfer(from, collateral);
     } else if (msg.sender == address(poolUsdcPod)) {
       uint256 collateral = poolUsdcPod.tokenToCollateralValue(amount);
-      v3Token.transfer(from, collateral);
+      v3Token.transfer(from, collateral * 1e12);
     } else {
       revert("MigrateV2ToV3/unknown-token");
     }
