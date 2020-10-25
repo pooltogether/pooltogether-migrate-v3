@@ -28,5 +28,13 @@
   "dependencies": {
     "@pooltogether/pooltogether-contracts": "^3.0.1",
     "ganache-cli": "^6.12.0"
-  }
+  },
+  "files": [
+    "abis/**",
+    "artifacts/**",
+    "contracts/**",
+    "deployments/**",
+    "deploy/**",
+    "README.md"
+  ]
 }
