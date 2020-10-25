@@ -1,7 +1,7 @@
 {
   "name": "@pooltogether/migrate-v3",
   "description": "Ethereum Smart Contract to help users migrate from PoolManager V2 to PoolTogether V3",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -12,7 +12,7 @@
     "test": "buidler test",
     "fork-test": "buidler --network fork run ./scripts/fork-test.js",
     "verify": "buidler etherscan-verify --license GPL-3.0 --solc-input --api-key $ETHERSCAN_API_KEY --network",
-    "prepack": "rm -rf build cache && buidler compile && truffle-extract -b build -o abis",
+    "prepack": "rm -rf artifacts cache && buidler compile && truffle-extract -b artifacts -o abis",
     "postpublish": "PACKAGE_VERSION=$(./scripts/package-version.sh) && git tag -ae v$PACKAGE_VERSION && git push --tags"
   },
   "devDependencies": {
