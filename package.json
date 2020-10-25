@@ -1,6 +1,7 @@
 {
-  "name": "@pooltogether/buidler-console",
-  "version": "0.1.1",
+  "name": "@pooltogether/migrate-v3",
+  "description": "Ethereum Smart Contract to help users migrate from PoolManager V2 to PoolTogether V3",
+  "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
