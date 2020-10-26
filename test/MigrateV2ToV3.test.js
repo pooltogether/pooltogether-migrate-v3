@@ -1,9 +1,7 @@
 const { expect } = require("chai");
 const buidler = require('@nomiclabs/buidler')
-const ERC20Mintable = require('../artifacts/ERC20Mintable.json')
-const ERC777Mintable = require('../artifacts/ERC777Mintable.json')
-const { deployContract, deployMockContract } = require('ethereum-waffle')
-const { AddressZero } = require("ethers").constants
+const ERC721Mintable = require('../artifacts/ERC721Mintable.json')
+const { deployContract } = require('ethereum-waffle')
 const { deployments, ethers } = buidler;
 
 const overrides = { gasLimit: 20000000 }
@@ -20,13 +18,15 @@ describe('MigrateV2ToV3', () => {
 
   let provider
 
-  let registry, poolDai, poolUsdc, poolDaiPod, poolUsdcPod
+  let poolDai, poolUsdc, poolDaiPod, poolUsdcPod, nft
 
   beforeEach(async () => {
     [wallet, wallet2] = await buidler.ethers.getSigners()
     provider = buidler.ethers.provider
 
     await deployments.fixture()
+
+    nft = await deployContract(wallet, ERC721Mintable, [], overrides)
 
     migrate = await ethers.getContractAt(
       "MigrateV2ToV3",
@@ -152,6 +152,19 @@ describe('MigrateV2ToV3', () => {
     it('should not allow anyone else to withdraw', async () => {
       await v3Token.mint(migrate.address, toWei('999'))
       await expect(migrate.connect(wallet2).withdrawERC20(v3Token.address)).to.be.revertedWith("Ownable: caller is not the owner")
+    })
+  })
+
+  describe('withdrawERC721()', async () => {
+    it('should be able to withdraw an nft', async () => {
+      await nft.mint(migrate.address, '1234')
+      await migrate.withdrawERC721(nft.address, '1234')
+      expect(await nft.ownerOf('1234')).to.equal(wallet._address)
+    })
+
+    it('should not allow anyone but the owner to withdraw', async () => {
+      await nft.mint(migrate.address, '1234')
+      await expect(migrate.connect(wallet2).withdrawERC721(nft.address, '1234')).to.be.revertedWith('Ownable: caller is not the owner')
     })
   })
 

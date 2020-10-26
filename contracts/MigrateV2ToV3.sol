@@ -2,6 +2,7 @@ pragma solidity ^0.6.12;
 
 import "./external/MixedPodInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC777/IERC777.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC777/IERC777Recipient.sol";
@@ -81,6 +82,10 @@ contract MigrateV2ToV3 is OwnableUpgradeSafe, IERC777Recipient, IERC1820Implemen
   function withdrawERC20(IERC20 token) external onlyOwner {
     uint256 amount = token.balanceOf(address(this));
     token.transfer(msg.sender, amount);
+  }
+
+  function withdrawERC721(IERC721 token, uint256 id) external onlyOwner {
+    IERC721(token).transferFrom(address(this), msg.sender, id);
   }
 
   function canImplementInterfaceForAddress(bytes32 interfaceHash, address account) external override view returns (bytes32) {
