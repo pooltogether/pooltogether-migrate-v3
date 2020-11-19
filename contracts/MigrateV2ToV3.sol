@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/introspection/IERC182
 
 /// @title Allows no-slippage swaps from PoolTogether V2 tickets to V3
 /// @dev Note that V3 tickets need to be transferred to this contract for liquidity.
-contract MigrateV2ToV3 is OwnableUpgradeSafe, IERC777Recipient, IERC1820Implementer {
+contract MigrateV2ToV3 is OwnableUpgradeSafe, IERC777Recipient {
 
   IERC1820Registry constant internal ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
@@ -125,17 +125,5 @@ contract MigrateV2ToV3 is OwnableUpgradeSafe, IERC777Recipient, IERC1820Implemen
   /// @param id The id of the token to transfer
   function withdrawERC721(IERC721 token, uint256 id, address to) external onlyOwner {
     IERC721(token).transferFrom(address(this), to, id);
-  }
-
-  /// @notice Used by the ERC1820 registry to determine whether this contract can implement an interface for an address.
-  /// This contract will only implement interfaces on it's own behalf.
-  /// @param interfaceHash The hash of the interface to check
-  /// @param account The account on whose behalf this interface can be implmented.
-  function canImplementInterfaceForAddress(bytes32 interfaceHash, address account) external override view returns (bytes32) {
-    if (account == address(this) && interfaceHash == TOKENS_RECIPIENT_INTERFACE_HASH) {
-      return _ERC1820_ACCEPT_MAGIC;
-    } else {
-      return bytes32(0x00);
-    }
   }
 }

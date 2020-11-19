@@ -3,6 +3,7 @@ const networks = require('./buidler.networks')
 usePlugin("@nomiclabs/buidler-ethers");
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("buidler-deploy");
+usePlugin("solidity-coverage");
 usePlugin("@nomiclabs/buidler-etherscan");
 
 module.exports = {
@@ -37,5 +38,8 @@ module.exports = {
     erc1820Registry: {
       1: '0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24'
     }
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
   }
 };
