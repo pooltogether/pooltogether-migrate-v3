@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const buidler = require('@nomiclabs/buidler')
 const ERC721Mintable = require('../artifacts/ERC721Mintable.json')
+const ERC20Mintable = require('../artifacts/ERC20Mintable.json')
 const { deployContract } = require('ethereum-waffle')
 const { deployments, ethers } = buidler;
 
@@ -18,7 +19,7 @@ describe('MigrateV2ToV3', () => {
 
   let provider
 
-  let poolDai, poolUsdc, poolDaiPod, poolUsdcPod, nft
+  let poolDai, poolUsdc, poolDaiPod, poolUsdcPod, nft, erc20
 
   beforeEach(async () => {
     [wallet, wallet2] = await buidler.ethers.getSigners()
@@ -27,6 +28,8 @@ describe('MigrateV2ToV3', () => {
     await deployments.fixture()
 
     nft = await deployContract(wallet, ERC721Mintable, [], overrides)
+
+    erc20 = await deployContract(wallet, ERC20Mintable, [], overrides)
 
     migrate = await ethers.getContractAt(
       "MigrateV2ToV3",
@@ -129,7 +132,7 @@ describe('MigrateV2ToV3', () => {
       await v3Token.mint(migrate.address, toWei('1000'))
       await poolUsdcPod.send(migrate.address, toWei('999'), [])
 
-      await migrate.withdrawERC777(poolUsdcPod.address)
+      await migrate.withdrawERC777(poolUsdcPod.address, wallet._address)
       expect(await poolUsdcPod.balanceOf(wallet._address)).to.equal(toWei('999'))
     })
 
@@ -138,33 +141,49 @@ describe('MigrateV2ToV3', () => {
       await v3Token.mint(migrate.address, toWei('1000'))
       await poolUsdcPod.send(migrate.address, toWei('999'), [])
 
-      await expect(migrate.connect(wallet2).withdrawERC777(poolUsdcPod.address)).to.be.revertedWith("Ownable: caller is not the owner")
+      await expect(migrate.connect(wallet2).withdrawERC777(poolUsdcPod.address, wallet._address)).to.be.revertedWith("Ownable: caller is not the owner")
     })
   })
 
   describe('withdrawERC20()', async () => {
     it('should allow owner to withdraw tokens', async () => {
       await v3Token.mint(migrate.address, toWei('999'))
-      await migrate.withdrawERC20(v3Token.address)
+      await migrate.withdrawERC20(v3Token.address, wallet._address)
       expect(await v3Token.balanceOf(wallet._address)).to.equal(toWei('999'))
     })
 
     it('should not allow anyone else to withdraw', async () => {
       await v3Token.mint(migrate.address, toWei('999'))
-      await expect(migrate.connect(wallet2).withdrawERC20(v3Token.address)).to.be.revertedWith("Ownable: caller is not the owner")
+      await expect(migrate.connect(wallet2).withdrawERC20(v3Token.address, wallet._address)).to.be.revertedWith("Ownable: caller is not the owner")
+    })
+  })
+
+  describe('withdrawERC20Batch()', async () => {
+    it('should allow owner to withdraw tokens', async () => {
+      await erc20.mint(migrate.address, toWei('999'))
+      await v3Token.mint(migrate.address, toWei('999'))
+      await migrate.withdrawERC20Batch([v3Token.address, erc20.address], wallet._address)
+      expect(await v3Token.balanceOf(wallet._address)).to.equal(toWei('999'))
+      expect(await erc20.balanceOf(wallet._address)).to.equal(toWei('999'))
+      expect(await v3Token.balanceOf(migrate.address)).to.equal('0')
+      expect(await erc20.balanceOf(migrate.address)).to.equal('0')
+    })
+
+    it('should not allow anyone else to withdraw', async () => {
+      await expect(migrate.connect(wallet2).withdrawERC20Batch([v3Token.address], wallet._address)).to.be.revertedWith("Ownable: caller is not the owner")
     })
   })
 
   describe('withdrawERC721()', async () => {
     it('should be able to withdraw an nft', async () => {
       await nft.mint(migrate.address, '1234')
-      await migrate.withdrawERC721(nft.address, '1234')
+      await migrate.withdrawERC721(nft.address, '1234', wallet._address)
       expect(await nft.ownerOf('1234')).to.equal(wallet._address)
     })
 
     it('should not allow anyone but the owner to withdraw', async () => {
       await nft.mint(migrate.address, '1234')
-      await expect(migrate.connect(wallet2).withdrawERC721(nft.address, '1234')).to.be.revertedWith('Ownable: caller is not the owner')
+      await expect(migrate.connect(wallet2).withdrawERC721(nft.address, '1234', wallet._address)).to.be.revertedWith('Ownable: caller is not the owner')
     })
   })
 
